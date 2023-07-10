@@ -6,20 +6,15 @@ inputs:
   test:
     required: true
     description: "A test script path."
-
   target:
     description: "Set or override the target URL for the tests"
-
   output:
     description: "Save the test run report to the given path"
     default: "./artillery.report.json"
-
   config:
     description: "A path to the shared configuration file"
-
   insecure:
     description: "Turn off TLS validation during the test run"
-
   quiet:
     description: "Run in quiet mode"
 
