@@ -19,6 +19,8 @@
     "url": "https://github.com/artilleryio/action-run.git"
   },
   "devDependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/exec": "^1.1.1",
     "@vercel/ncc": "^0.36.1"
   }
 }
