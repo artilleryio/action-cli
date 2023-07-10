@@ -1,3 +1,4 @@
+const fs = require("node:fs");
 const path = require("node:path");
 const core = require("@actions/core");
 const { exec } = require("@actions/exec");
@@ -38,6 +39,19 @@ async function main() {
   const flags = inputsToFlags(options);
 
   core.debug(`cli flags: ${JSON.stringify(flags, null, 2)}`);
+
+  if (!fs.existsSync(ARTILLERY_BINARY_PATH)) {
+    core.setFailed(
+      `\
+Failed to locate Artillery binary at "${ARTILLERY_BINARY_PATH}". Did you forget to use the Artillery Docker container?
+
+Please make sure this job is using the following container:
+
+  container: artilleryio/artillery:latest`
+    );
+
+    return;
+  }
 
   // Run the tests.
   await exec(ARTILLERY_BINARY_PATH, ["run", test, ...flags], {
