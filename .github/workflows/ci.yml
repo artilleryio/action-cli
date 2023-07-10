@@ -54,8 +54,8 @@ jobs:
         uses: google-github-actions/release-please-action@v3
         with:
           release-type: node
-          package-name: gh-test-action
-          monorepo-tags: true
+          package-name: action-setup
+          pull-request-title-pattern: "chore: release${component} ${version}"
 
       - name: Update release tags
         if: ${{ steps.release.outputs.release_created }}
