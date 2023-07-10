@@ -1,0 +1,24 @@
+{
+  "private": true,
+  "name": "action-run",
+  "version": "0.0.0",
+  "description": "GitHub Action for load testing with Artillery",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "ncc build ./index.js -o ./dist --source-map"
+  },
+  "keywords": [
+    "github",
+    "action",
+    "artillery",
+    "testing",
+    "load"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artilleryio/action-run.git"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.36.1"
+  }
+}
