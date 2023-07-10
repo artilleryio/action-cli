@@ -3998,6 +3998,14 @@ module.exports = require("net");
 
 /***/ }),
 
+/***/ 561:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:fs");
+
+/***/ }),
+
 /***/ 411:
 /***/ ((module) => {
 
@@ -4095,6 +4103,7 @@ module.exports = require("util");
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
+const fs = __nccwpck_require__(561);
 const path = __nccwpck_require__(411);
 const core = __nccwpck_require__(186);
 const { exec } = __nccwpck_require__(514);
@@ -4135,6 +4144,19 @@ async function main() {
   const flags = inputsToFlags(options);
 
   core.debug(`cli flags: ${JSON.stringify(flags, null, 2)}`);
+
+  if (!fs.existsSync(ARTILLERY_BINARY_PATH)) {
+    core.setFailed(
+      `\
+Failed to locate Artillery binary at "${ARTILLERY_BINARY_PATH}". Did you forget to use the Artillery Docker container?
+
+Please make sure this job is using the following container:
+
+  container: artilleryio/artillery:latest`
+    );
+
+    return;
+  }
 
   // Run the tests.
   await exec(ARTILLERY_BINARY_PATH, ["run", test, ...flags], {
