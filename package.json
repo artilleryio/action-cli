@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "action-run",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "GitHub Action for load testing with Artillery",
   "main": "./dist/index.js",
   "scripts": {
