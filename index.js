@@ -8,12 +8,14 @@ const ARTILLERY_BINARY_PATH = "/home/node/artillery/bin/run";
 function getInputs() {
   const test = core.getInput("test");
   const target = core.getInput("target");
+  const environment = core.getInput("environment");
   const output = core.getInput("output");
   const config = core.getInput("config");
 
   return {
     test,
     target,
+    environment,
     output,
     config,
   };
