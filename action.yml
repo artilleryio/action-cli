@@ -5,7 +5,7 @@ description: "Load testing of your application at scale."
 inputs:
   test:
     required: true
-    description: "A test script path."
+    description: "Path to the test script."
   target:
     description: "Set or override the target URL for the tests"
   environment:
@@ -25,8 +25,17 @@ outputs:
     description: "A path to the generated report JSON file"
 
 runs:
-  using: "node16"
-  main: "dist/index.js"
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    TARGET: ${{ inputs.target }}
+    ENVIRONMENT: ${{ inputs.environment }}
+    OUTPUT: ${{ inputs.output }}
+    CONFIG: ${{ inputs.config }}
+    INSECURE: ${{ inputs.insecure }}
+    QUIET: ${{ inputs.quiet }}
+  args:
+    - ${{ inputs.test }}
 
 branding:
   icon: zap
