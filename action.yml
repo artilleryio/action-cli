@@ -8,6 +8,8 @@ inputs:
     description: "A test script path."
   target:
     description: "Set or override the target URL for the tests"
+  environment:
+    description: "Run the test using the specified environment"
   output:
     description: "Save the test run report to the given path"
     default: "./artillery.report.json"
