@@ -1,0 +1,11 @@
+config:
+  target: "http://asciiart.artillery.io:8080"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 10
+scenarios:
+  - name: Get 3 animal pictures
+    flow:
+      - get:
+          url: "/dino"
