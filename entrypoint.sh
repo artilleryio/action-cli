@@ -6,6 +6,7 @@
   ${CONFIG:+-c $CONFIG}
   ${ENVIRONMENT:+-e $ENVIRONMENT}
   ${TARGET:+-t $TARGET}
+  ${DOTENV:+--dotenv $DOTENV}
   ${INSECURE:+--insecure}
   ${QUIET:+-q}
 
