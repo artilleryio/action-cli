@@ -9,7 +9,7 @@ Official GitHub Action for running load tests with <a href="https://artillery.io
 
 ## Inputs
 
-The `artilleryio/run` action supports a subset of the [`run` command options](https://www.artillery.io/docs/reference/cli/run#options) of our CLI.
+The `artilleryio/action-run` action supports a subset of the [`run` command options](https://www.artillery.io/docs/reference/cli/run#options) of our CLI.
 
 ### `test`
 
