@@ -21,11 +21,7 @@ jobs:
         id: load_tests
         uses: ./
         with:
-          test: ./test.yml
-
-      - name: Check the outputs
-        run: |
-          if [ -z "${{ steps.load_tests.outputs.report }}" ]; then exit 1; fi
+          command: run ./test.yml
 
   release:
     if: github.ref == 'refs/heads/main'
