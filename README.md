@@ -11,16 +11,18 @@ Official GitHub Action for running load tests with <a href="https://artillery.io
 
 The `artilleryio/action-run` action supports a subset of the [`run` command options](https://www.artillery.io/docs/reference/cli/run#options) of our CLI.
 
-### `test`
+### `script`
 
-A test script path.
+A path to the test script to run.
 
 ```yml
 - name: Load tests
   uses: artilleryio/action-run@v1
   with:
-    test: ./preprod.yml
+    script: ./preprod.yml
 ```
+
+> Learn more about [Writing test scripts with Artillery](https://www.artillery.io/docs/get-started/first-test).
 
 ### `target`
 
@@ -38,7 +40,7 @@ Write the test report to the given path.
 - name: Load tests
   uses: artilleryio/action-run@v1
   with:
-    test: ./load-tests/prod.yml
+    script: ./load-tests/prod.yml
     # Apply a shared Artillery configuration
     # for all the test scripts in this run.
     config: ./load-tests/artillery.config.yml
@@ -56,7 +58,7 @@ A path to the shared configuration file. When provided, the configuration will m
 - name: Load tests
   uses: artilleryio/action-run@v1
   with:
-    test: ./load-tests/prod.yml
+    script: ./load-tests/prod.yml
     # Apply a shared Artillery configuration
     # for all the test scripts in this run.
     config: ./load-tests/artillery.config.yml
@@ -85,7 +87,7 @@ A path to the generated test run report JSON file.
   id: loadtest
   uses: artilleryio/action-run@v1
   with:
-    test: ./test.yml
+    script: ./test.yml
 
 - name: Access report output
   run: echo "Load test report saved to ${{ steps.loadtest.outputs.report }}"
@@ -117,7 +119,7 @@ jobs:
         uses: artilleryio/action-run@v1
         with:
           # Provide the test scripts to run.
-          test: ./load-tests/pre-prod.yml
+          script: ./load-tests/pre-prod.yml
           # Run the test scripts against the staging environment
           # as a quality assurance before promoting it to preprod.
           target: https://staging.myapp.com
@@ -150,7 +152,7 @@ jobs:
       - name: Load tests
         uses: artilleryio/action-run@v1
         with:
-          test: ./prod.yml
+          script: ./prod.yml
           output: ./report.json
 
       - name: Upload test report
