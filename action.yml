@@ -3,42 +3,15 @@ author: Artillery
 description: "Load testing of your application at scale."
 
 inputs:
-  script:
+  command:
     required: true
-    description: "Path to the test script."
-  target:
-    description: "Set or override the target URL for the tests"
-  environment:
-    description: "Run the test using the specified environment"
-  output:
-    description: "Save the test run report to the given path"
-    default: "./artillery.report.json"
-  config:
-    description: "A path to the shared configuration file"
-  dotenv:
-    description: "A path to an environment file to use during tests"
-  insecure:
-    description: "Turn off TLS validation during the test run"
-  quiet:
-    description: "Run in quiet mode"
-
-outputs:
-  report:
-    description: "A path to the generated report JSON file"
+    description: "Artillery CLI command to execute"
 
 runs:
   using: "docker"
   image: "Dockerfile"
-  env:
-    TARGET: ${{ inputs.target }}
-    ENVIRONMENT: ${{ inputs.environment }}
-    OUTPUT: ${{ inputs.output }}
-    CONFIG: ${{ inputs.config }}
-    DOTENV: ${{ inputs.dotenv }}
-    INSECURE: ${{ inputs.insecure }}
-    QUIET: ${{ inputs.quiet }}
   args:
-    - ${{ inputs.script }}
+    - ${{ inputs.command }}
 
 branding:
   icon: zap
