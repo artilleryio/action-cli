@@ -11,87 +11,18 @@ Official GitHub Action for running load tests with <a href="https://artillery.io
 
 The `artilleryio/action-run` action supports a subset of the [`run` command options](https://www.artillery.io/docs/reference/cli/run#options) of our CLI.
 
-### `script`
+### `command`
 
 A path to the test script to run.
 
 ```yml
 - name: Load tests
-  uses: artilleryio/action-run@v1
+  uses: artilleryio/action-cli@v1
   with:
-    script: ./preprod.yml
+    command: run ./preprod.yml
 ```
 
 > Learn more about [Writing test scripts with Artillery](https://www.artillery.io/docs/get-started/first-test).
-
-### `target`
-
-- _Optional_
-
-Set or override the target URL for the tests.
-
-### `output`
-
-- _Optional_, default: `./report.json`
-
-Write the test report to the given path.
-
-```yml
-- name: Load tests
-  uses: artilleryio/action-run@v1
-  with:
-    script: ./load-tests/prod.yml
-    # Apply a shared Artillery configuration
-    # for all the test scripts in this run.
-    config: ./load-tests/artillery.config.yml
-    # Generate a report for this test run.
-    output: ./custom-report.json
-```
-
-### `config`
-
-- _Optional_
-
-A path to the shared configuration file. When provided, the configuration will merge with the existing `config` fields in individual test scripts.
-
-```yml
-- name: Load tests
-  uses: artilleryio/action-run@v1
-  with:
-    script: ./load-tests/prod.yml
-    # Apply a shared Artillery configuration
-    # for all the test scripts in this run.
-    config: ./load-tests/artillery.config.yml
-```
-
-### `insecure`
-
-- _Optional_
-
-Ignore TLS validation during the test run.
-
-### `quiet`
-
-- _Optional_
-
-Run the tests in quiet mode.
-
-## Outputs
-
-### `report`
-
-A path to the generated test run report JSON file.
-
-```yml
-- name: Load tests
-  id: loadtest
-  uses: artilleryio/action-run@v1
-  with:
-    script: ./test.yml
-
-- name: Access report output
-  run: echo "Load test report saved to ${{ steps.loadtest.outputs.report }}"
-```
 
 ## Examples
 
@@ -116,15 +47,17 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Load tests
-        uses: artilleryio/action-run@v1
+        uses: artilleryio/action-cli@v1
+        id: loadtest
         with:
-          # Provide the test scripts to run.
-          script: ./load-tests/pre-prod.yml
           # Run the test scripts against the staging environment
           # as a quality assurance before promoting it to preprod.
-          target: https://staging.myapp.com
+          command: run ./load-tests/pre-prod.yml --target https://staging.example.com
 
       - name: Deploy
+        # Require the "loadtest" step to pass
+        # before proceeding with the deployment.
+        needs: [loadtest]
         run: ./deploy.sh
 ```
 
@@ -150,10 +83,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Load tests
-        uses: artilleryio/action-run@v1
+        uses: artilleryio/action-cli@v1
         with:
-          script: ./prod.yml
-          output: ./report.json
+          command: run ./prod.yml --output report.json
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
