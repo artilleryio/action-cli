@@ -17,11 +17,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Use the action
-        id: load_tests
+      # A test for the basic CLI usage.
+      - name: Running a single test
         uses: ./
         with:
           command: run ./test.yml
+
+      # The generated report must be available to the rest of the workflow.
+      - name: Generating the report
+        uses: ./
+        with:
+          command: run ./test.yml --output ./report.json
+      - name: Access report
+        run: |
+          if [ ! -f ./report.json ]; then
+            echo "The generated report JSON file couldn't be accessed."
+            exit 1
+          fi
 
   release:
     if: github.ref == 'refs/heads/main'
