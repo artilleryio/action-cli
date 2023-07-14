@@ -13,7 +13,7 @@ The `artilleryio/action-run` action supports a subset of the [`run` command opti
 
 ### `command`
 
-A path to the test script to run.
+The Artillery CLI command to run.
 
 ```yml
 - name: Load tests
