@@ -14,8 +14,8 @@ Official GitHub Action for running load tests with <a href="https://artillery.io
 The Artillery CLI command to run. You can use all the available commands:
 
 - [`run`](https://www.artillery.io/docs/reference/cli/run)
-- [`run:fargate`](https://www.artillery.io/docs/reference/cli/run-fargate)
-- `run:lambda`
+- [`run-fargate`](https://www.artillery.io/docs/reference/cli/run-fargate)
+- [`run-lambda`](https://www.artillery.io/docs/reference/cli/run-lambda)
 
 ```yml
 - name: Load tests
