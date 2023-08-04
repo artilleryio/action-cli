@@ -45,6 +45,23 @@ jobs:
         with:
           command: run ./cwd.yml
           working-directory: ./my-dir
+      - name: Cleanup
+        run: rm -rf ./my-dir
+
+      # Supports custom Artillery binary path.
+      # Useful to test against intermediate builds of Artillery.
+      - name: Prepare custom binary
+        run: echo "echo \"$1\" >> \"output.txt\"" >> ./custom-binary.sh
+      - name: Supports custom Artillery binary
+        uses: ./
+        with:
+          command: hello
+        env:
+          ARTILLERY_BINARY_PATH: ./custom-binary.sh
+      - name: Check the output
+        run: '[[ "$(cat ./output.txt)" == "hello" ]] || exit 1'
+      - name: Cleanup
+        run: rm ./custom-binary.sh
 
   release:
     if: github.ref == 'refs/heads/main'
