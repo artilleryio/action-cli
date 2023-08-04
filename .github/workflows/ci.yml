@@ -52,7 +52,7 @@ jobs:
       # Useful to test against intermediate builds of Artillery.
       - name: Prepare custom binary
         run: |-
-          echo "echo \"$1\" >> \"output.txt\"" >> ./custom-binary.sh
+          echo 'echo "$1" >> ./output.txt' >> ./custom-binary.sh
           chmod +x ./custom-binary.sh
       - name: Supports custom Artillery binary
         uses: ./
