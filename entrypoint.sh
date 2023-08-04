@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Respect custom "working-directory" input.
-if [ -z "${CWD}" ]; then
+if [ -n "${CWD}" ]; then
   cd "${CWD}"
 fi
 
