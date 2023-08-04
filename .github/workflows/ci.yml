@@ -35,6 +35,17 @@ jobs:
             exit 1
           fi
 
+      # Supports custom working directory.
+      - name: Prepare custom directory
+        run: |-
+          mkdir ./my-dir
+          cp ./test.yml ./my-dir/cwd.yml
+      - name: Custom working directoery
+        uses: ./
+        with:
+          command: run ./cwd.yml
+          working-directory: ./my-dir
+
   release:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
