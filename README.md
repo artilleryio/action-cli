@@ -26,6 +26,20 @@ The Artillery CLI command to run. You can use all the available commands:
 
 > Learn more about [Writing test scripts with Artillery](https://www.artillery.io/docs/get-started/first-test).
 
+### `working-directory`
+
+- _Optional_
+
+Path to a directory to use as the current working directory when running Artillery commands.
+
+```yml
+- name: Load tests
+  uses: artilleryio/action-cli@v1
+  with:
+    command: run ./test.yml
+    working-directory: ./packages/app/load-tests
+```
+
 ## Outputs
 
 This action does not set any outputs.
