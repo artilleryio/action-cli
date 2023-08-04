@@ -6,10 +6,14 @@ inputs:
   command:
     required: true
     description: "Artillery CLI command to execute"
+  working-directory:
+    description: "Custom working directory for Artillery commands"
 
 runs:
   using: "docker"
   image: "Dockerfile"
+  env:
+    CWD: ${{ inputs.working-directory }}
   args:
     - ${{ inputs.command }}
 
