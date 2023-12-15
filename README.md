@@ -65,3 +65,10 @@ You can generate and access the test run report using the CLI directly:
 ## Usage examples
 
 Learn more about [Running Artillery on GitHub Actions](https://www.artillery.io/docs/cicd/github-actions).
+
+## Bugs / Questions
+
+Talk to us in the main [`artilleryio/artillery`](https://github.com/artilleryio/artillery) repo
+
+- [Issues](https://github.com/artilleryio/artillery/issues)
+- [Discussions](https://github.com/artilleryio/artillery/discussions/categories/artillery)
