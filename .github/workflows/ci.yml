@@ -23,6 +23,11 @@ jobs:
         with:
           command: run ./test.yml
 
+      - name: Running a Playwright-based test
+        uses: ./
+        with:
+          command: run ./browser-test.ts
+
       # The generated report must be available to the rest of the workflow.
       - name: Generating the report
         uses: ./
