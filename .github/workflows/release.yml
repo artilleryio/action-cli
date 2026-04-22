@@ -144,3 +144,13 @@ jobs:
           else
             gh release create "${NEW_TAG}" --title "${NEW_TAG}" --generate-notes
           fi
+
+      # The GitHub Marketplace publish checkbox is UI-only: neither `gh release
+      # create` nor the Releases API exposes it. Surface a workflow annotation
+      # with a direct link to the release-edit page so the maintainer cutting
+      # the release can tick the box in a couple of clicks.
+      - name: Marketplace publish reminder
+        env:
+          NEW_TAG: v${{ inputs.artillery_version }}
+        run: |
+          echo "::notice title=Manual step required::Edit the release at https://github.com/${{ github.repository }}/releases/edit/${NEW_TAG} and tick 'Publish this Action to the GitHub Marketplace', then click 'Update release'."
