@@ -17,24 +17,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      # Stage the Dockerfile next to the local action definition so that
+      # `uses: ./.github/action-local` builds the image from source. This
+      # lets PRs exercise the action end-to-end before the image is pushed
+      # to GHCR by the release workflow.
+      - name: Stage local action
+        run: |
+          cp Dockerfile entrypoint.sh .github/action-local/
+
       - name: Debug
         run: |
           whoami
           pwd
       # A test for the basic CLI usage.
       - name: Running a single test
-        uses: ./
+        uses: ./.github/action-local
         with:
           command: run ./test.yml
 
       - name: Running a Playwright-based test
-        uses: ./
+        uses: ./.github/action-local
         with:
           command: run ./browser-test.ts
 
       # The generated report must be available to the rest of the workflow.
       - name: Generating the report
-        uses: ./
+        uses: ./.github/action-local
         with:
           command: run ./test.yml --output ./report.json
       - name: Access report
@@ -50,7 +58,7 @@ jobs:
           mkdir ./my-dir
           cp ./test.yml ./my-dir/cwd.yml
       - name: Custom working directoery
-        uses: ./
+        uses: ./.github/action-local
         with:
           command: run ./cwd.yml
           working-directory: ./my-dir
@@ -64,7 +72,7 @@ jobs:
           echo 'echo "$1" >> ./output.txt' >> ./custom-binary.sh
           chmod +x ./custom-binary.sh
       - name: Supports custom Artillery binary
-        uses: ./
+        uses: ./.github/action-local
         with:
           command: hello
         env:

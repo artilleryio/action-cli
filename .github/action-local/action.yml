@@ -1,0 +1,28 @@
+name: "Artillery load testing action (local build)"
+author: Artillery
+description: |
+  Internal-only action definition used by this repository's CI. It builds the
+  Docker image from the Dockerfile so pull requests can test changes before
+  the image is published to GHCR. End users should reference the top-level
+  ./action.yml via `uses: artilleryio/action-cli@v<version>` instead.
+
+inputs:
+  command:
+    required: true
+    description: "Artillery CLI command to execute"
+  working-directory:
+    description: "Custom working directory for Artillery commands"
+
+runs:
+  # The Dockerfile and entrypoint.sh are staged into this directory by the
+  # "Stage local action" step in .github/workflows/ci.yml before use.
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    CWD: ${{ inputs.working-directory }}
+  args:
+    - ${{ inputs.command }}
+
+branding:
+  icon: zap
+  color: gray-dark
