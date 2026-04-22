@@ -11,11 +11,40 @@ permissions:
   pull-requests: write
 
 jobs:
-  test:
+  # Verify that the ARTILLERY_VERSION default baked into the Dockerfile matches
+  # the version declared in package.json. On release, the release workflow also
+  # asserts this matches the release tag.
+  version-consistency:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Assert Dockerfile ARTILLERY_VERSION matches package.json
+        run: |
+          set -euo pipefail
+          pkg_version="$(jq -r .version package.json)"
+          dockerfile_version="$(grep -E '^ARG ARTILLERY_VERSION=' Dockerfile | head -n1 | cut -d= -f2)"
+          action_image_tag="$(grep -oE 'ghcr\.io/artilleryio/action-cli:[^"]+' action.yml | head -n1 | cut -d: -f2)"
+
+          echo "package.json version:       ${pkg_version}"
+          echo "Dockerfile ARTILLERY_VERSION: ${dockerfile_version}"
+          echo "action.yml image tag:        ${action_image_tag}"
+
+          if [ "${pkg_version}" != "${dockerfile_version}" ]; then
+            echo "::error::Dockerfile ARTILLERY_VERSION (${dockerfile_version}) does not match package.json (${pkg_version})."
+            exit 1
+          fi
+          if [ "${pkg_version}" != "${action_image_tag}" ]; then
+            echo "::error::action.yml image tag (${action_image_tag}) does not match package.json (${pkg_version})."
+            exit 1
+          fi
+
+  test:
+    runs-on: ubuntu-latest
+    needs: [version-consistency]
+    steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # Stage the Dockerfile next to the local action definition so that
       # `uses: ./.github/action-local` builds the image from source. This
