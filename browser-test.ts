@@ -11,10 +11,6 @@ export const config = {
   },
 };
 
-export const before = {
-  engine: "playwright",
-};
-
 export const scenarios = [
   {
     engine: "playwright",
