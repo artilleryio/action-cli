@@ -7,6 +7,25 @@
 Official GitHub Action for running load tests with <a href="https://artillery.io/">Artillery</a>.
 </p>
 
+## Versioning
+
+Starting with `v2.0.30`, this action's version tracks the version of the
+[Artillery CLI](https://www.artillery.io/docs) it wraps. For example,
+`artilleryio/action-cli@v2.0.30` runs Artillery `2.0.30`.
+
+Supported tag forms:
+
+- `@v2.0.30` — pinned to an exact Artillery version (recommended for reproducible runs).
+- `@v2` — latest release for Artillery 2.x.
+
+## Prebuilt image
+
+The action runs a prebuilt Docker image published to GitHub Container Registry
+at [`ghcr.io/artilleryio/action-cli`](https://github.com/artilleryio/action-cli/pkgs/container/action-cli).
+This avoids rebuilding the image (including Playwright + Chromium) on every
+job run, so consumers see much faster startup times. Only `linux/amd64` is
+published.
+
 ## Inputs
 
 ### `command`
