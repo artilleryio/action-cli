@@ -17,11 +17,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Debug
+        run: |
+          whoami
+          pwd
       # A test for the basic CLI usage.
       - name: Running a single test
         uses: ./
         with:
           command: run ./test.yml
+
+      - name: Running a Playwright-based test
+        uses: ./
+        with:
+          command: run ./browser-test.ts
 
       # The generated report must be available to the rest of the workflow.
       - name: Generating the report
