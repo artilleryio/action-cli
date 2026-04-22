@@ -17,6 +17,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Debug
+        run: |
+          whoami
+          pwd
       # A test for the basic CLI usage.
       - name: Running a single test
         uses: ./
