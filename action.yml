@@ -10,8 +10,11 @@ inputs:
     description: "Custom working directory for Artillery commands"
 
 runs:
+  # Prebuilt image published by .github/workflows/publish-image.yml.
+  # The tag MUST match the release tag of this action (without the leading "v")
+  # and is rewritten by .github/workflows/release.yml on each release.
   using: "docker"
-  image: "Dockerfile"
+  image: "docker://ghcr.io/artilleryio/action-cli:2.0.30"
   env:
     CWD: ${{ inputs.working-directory }}
   args:

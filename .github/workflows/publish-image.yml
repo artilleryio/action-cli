@@ -1,0 +1,108 @@
+name: publish-image
+
+# Builds the Docker image and pushes it to GHCR as
+# ghcr.io/artilleryio/action-cli. Triggered automatically when a GitHub
+# Release is published (the release workflow does this), and available as a
+# manual dispatch to rebuild a specific released version without a code change
+# (e.g. to pick up upstream base-image security fixes).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to (re)build, e.g. 2.0.30 (without leading v)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve version
+        id: version
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "release" ]; then
+            tag="${{ github.event.release.tag_name }}"
+            version="${tag#v}"
+          else
+            version="${{ inputs.version }}"
+          fi
+          if ! echo "${version}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version '${version}' is not a valid semver X.Y.Z string."
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout at ref
+        uses: actions/checkout@v4
+        with:
+          # For release events, check out the exact commit the release points at.
+          # For workflow_dispatch, check out the tag that matches the requested version.
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || format('v{0}', inputs.version) }}
+
+      # Belt-and-braces: even though we pass ARTILLERY_VERSION as a build-arg,
+      # the Dockerfile default MUST agree with the release tag so local builds
+      # (`docker build .`) also produce the correct image.
+      - name: Assert Dockerfile matches release version
+        env:
+          EXPECTED: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          dockerfile_version="$(grep -E '^ARG ARTILLERY_VERSION=' Dockerfile | head -n1 | cut -d= -f2)"
+          echo "Release version:              ${EXPECTED}"
+          echo "Dockerfile ARTILLERY_VERSION: ${dockerfile_version}"
+          if [ "${EXPECTED}" != "${dockerfile_version}" ]; then
+            echo "::error::Dockerfile ARTILLERY_VERSION (${dockerfile_version}) does not match release version (${EXPECTED})."
+            exit 1
+          fi
+
+      - name: Read Playwright version from Dockerfile
+        id: playwright
+        run: |
+          set -euo pipefail
+          pw="$(grep -E '^ARG PLAYWRIGHT_VERSION=' Dockerfile | head -n1 | cut -d= -f2)"
+          echo "playwright_version=${pw}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/artilleryio/action-cli
+          # Produce tags: X.Y.Z, X, latest. (We deliberately omit X.Y since it
+          # only moves on Artillery patch releases within a minor line and is
+          # not useful given our version-tracks-Artillery policy.)
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.version.outputs.version }}
+            type=semver,pattern={{major}},value=${{ steps.version.outputs.version }}
+            type=raw,value=latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          build-args: |
+            ARTILLERY_VERSION=${{ steps.version.outputs.version }}
+            PLAYWRIGHT_VERSION=${{ steps.playwright.outputs.playwright_version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
