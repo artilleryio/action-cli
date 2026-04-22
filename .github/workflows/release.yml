@@ -1,0 +1,146 @@
+name: release
+
+# Manually-dispatched release flow. Given an Artillery CLI version (and
+# optionally a Playwright version), this workflow:
+#
+#   1. Updates the pinned versions in Dockerfile, action.yml, and package.json.
+#   2. Commits the change directly to main.
+#   3. Creates and pushes the git tag `v<artillery_version>`.
+#   4. Moves the floating `v<major>` tag onto the new commit.
+#   5. Creates a GitHub Release for the new tag, which triggers
+#      .github/workflows/publish-image.yml to build and push the image to GHCR.
+#
+# The action's version tracks the pinned Artillery CLI version, so
+# `artillery_version` is the release version of this action as well.
+
+on:
+  workflow_dispatch:
+    inputs:
+      artillery_version:
+        description: "Artillery CLI version to pin (e.g. 2.0.30, without leading v). This is also the release version of the action."
+        required: true
+        type: string
+      playwright_version:
+        description: "Playwright version to install in the image (e.g. 1.58.1)."
+        required: true
+        type: string
+      release_notes:
+        description: "Optional release notes (Markdown). Leave blank to auto-generate."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        env:
+          ARTILLERY_VERSION: ${{ inputs.artillery_version }}
+          PLAYWRIGHT_VERSION: ${{ inputs.playwright_version }}
+        run: |
+          set -euo pipefail
+          if ! echo "${ARTILLERY_VERSION}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::artillery_version '${ARTILLERY_VERSION}' must be semver X.Y.Z (no leading v)."
+            exit 1
+          fi
+          if ! echo "${PLAYWRIGHT_VERSION}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::playwright_version '${PLAYWRIGHT_VERSION}' must be semver X.Y.Z."
+            exit 1
+          fi
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Refuse if tag already exists
+        env:
+          NEW_TAG: v${{ inputs.artillery_version }}
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/${NEW_TAG}" >/dev/null; then
+            echo "::error::Tag ${NEW_TAG} already exists. Aborting."
+            exit 1
+          fi
+
+      - name: Update pinned versions
+        env:
+          ARTILLERY_VERSION: ${{ inputs.artillery_version }}
+          PLAYWRIGHT_VERSION: ${{ inputs.playwright_version }}
+        run: |
+          set -euo pipefail
+
+          # Dockerfile: update both ARG defaults.
+          sed -i -E "s|^ARG ARTILLERY_VERSION=.*|ARG ARTILLERY_VERSION=${ARTILLERY_VERSION}|" Dockerfile
+          sed -i -E "s|^ARG PLAYWRIGHT_VERSION=.*|ARG PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}|" Dockerfile
+
+          # action.yml: update the image tag.
+          sed -i -E "s|(ghcr\.io/artilleryio/action-cli:)[^\"]+|\1${ARTILLERY_VERSION}|" action.yml
+
+          # package.json: update the version field.
+          tmp="$(mktemp)"
+          jq --arg v "${ARTILLERY_VERSION}" '.version = $v' package.json > "$tmp"
+          mv "$tmp" package.json
+
+          echo "----- Dockerfile -----"; grep -E '^ARG ' Dockerfile
+          echo "----- action.yml -----"; grep 'ghcr.io' action.yml
+          echo "----- package.json -----"; jq .version package.json
+
+      - name: Re-assert consistency
+        env:
+          EXPECTED: ${{ inputs.artillery_version }}
+        run: |
+          set -euo pipefail
+          df="$(grep -E '^ARG ARTILLERY_VERSION=' Dockerfile | head -n1 | cut -d= -f2)"
+          act="$(grep -oE 'ghcr\.io/artilleryio/action-cli:[^"]+' action.yml | head -n1 | cut -d: -f2)"
+          pkg="$(jq -r .version package.json)"
+          for v in "$df" "$act" "$pkg"; do
+            if [ "$v" != "$EXPECTED" ]; then
+              echo "::error::Post-update consistency check failed: expected ${EXPECTED}, saw Dockerfile=${df} action.yml=${act} package.json=${pkg}"
+              exit 1
+            fi
+          done
+
+      - name: Commit, tag, and push
+        env:
+          ARTILLERY_VERSION: ${{ inputs.artillery_version }}
+        run: |
+          set -euo pipefail
+          major="${ARTILLERY_VERSION%%.*}"
+          new_tag="v${ARTILLERY_VERSION}"
+          major_tag="v${major}"
+
+          git config user.name "artillery-bot"
+          git config user.email "team@artillery.io"
+
+          git add Dockerfile action.yml package.json
+          git commit -m "chore: release ${new_tag}"
+          git push origin main
+
+          # Exact version tag (immutable).
+          git tag -a "${new_tag}" -m "Release ${new_tag}"
+          git push origin "${new_tag}"
+
+          # Floating major tag — move it to this commit.
+          git tag -d "${major_tag}" 2>/dev/null || true
+          git push origin ":refs/tags/${major_tag}" 2>/dev/null || true
+          git tag -a "${major_tag}" -m "Release ${major_tag}"
+          git push origin "${major_tag}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_TAG: v${{ inputs.artillery_version }}
+          NOTES: ${{ inputs.release_notes }}
+        run: |
+          set -euo pipefail
+          if [ -n "${NOTES}" ]; then
+            gh release create "${NEW_TAG}" --title "${NEW_TAG}" --notes "${NOTES}"
+          else
+            gh release create "${NEW_TAG}" --title "${NEW_TAG}" --generate-notes
+          fi

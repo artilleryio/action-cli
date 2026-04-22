@@ -7,8 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   # Verify that the ARTILLERY_VERSION default baked into the Dockerfile matches
@@ -110,34 +109,3 @@ jobs:
         run: '[[ "$(cat ./output.txt)" == "hello" ]] || exit 1'
       - name: Cleanup
         run: rm ./custom-binary.sh
-
-  release:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Release
-        id: release
-        uses: google-github-actions/release-please-action@v3
-        with:
-          release-type: node
-          package-name: action-run
-          pull-request-title-pattern: "chore: release${component} ${version}"
-
-      - name: Update release tags
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          git config user.name artillery-bot
-          git config user.email team@artillery.io
-          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/google-github-actions/release-please-action.git"
-          git tag -d v${{ steps.release.outputs.major }} || true
-          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git push origin :v${{ steps.release.outputs.major }} || true
-          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
-          git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-          git push origin v${{ steps.release.outputs.major }}
-          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
