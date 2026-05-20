@@ -14,7 +14,7 @@ runs:
   # The tag MUST match the release tag of this action (without the leading "v")
   # and is rewritten by .github/workflows/release.yml on each release.
   using: "docker"
-  image: "docker://ghcr.io/artilleryio/action-cli:2.0.31"
+  image: "docker://ghcr.io/artilleryio/action-cli:2.0.32"
   env:
     CWD: ${{ inputs.working-directory }}
   args:

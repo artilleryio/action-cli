@@ -1,11 +1,11 @@
 # The version of the Artillery CLI this action wraps.
 # This value MUST match the action's release tag (without the leading "v").
 # It is enforced by the `version-consistency` CI check.
-ARG ARTILLERY_VERSION=2.0.31
+ARG ARTILLERY_VERSION=2.0.32
 
 # The version of Playwright installed into the image (for browser-based tests).
 # Keep in sync with the Playwright peer dependency of the pinned Artillery version.
-ARG PLAYWRIGHT_VERSION=1.59.1
+ARG PLAYWRIGHT_VERSION=1.60.0
 
 FROM artilleryio/artillery:${ARTILLERY_VERSION}
 
